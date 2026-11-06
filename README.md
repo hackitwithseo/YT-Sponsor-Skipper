@@ -37,7 +37,7 @@ It never touches pre-roll, mid-roll, or bumper ads. Those belong to YouTube and 
 Not on any store yet — load it unpacked.
 
 1. Download or clone this repository into a folder.
-2. Open `brave://extensions` (or `chrome://extensions`).
+2. Open `chrome://extensions` (or `brave://extensions`).
 3. Turn on **Developer mode** in the top right.
 4. Click **Load unpacked** and select the folder.
 5. Pin the extension from the toolbar puzzle menu.
