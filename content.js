@@ -2,7 +2,8 @@
   "use strict";
 
   const HOST_ID = "sponsor-skipper-host";
-  const MIN_SEGMENT = 5;
+  const MARKER_CONTAINER_ID = "sb-timeline-previewbar";
+  const MIN_SEGMENT = 3;
   const MAX_SKIP = 180;
   const RETRY_DELAYS = [1200, 3000, 6500];
 
@@ -36,6 +37,7 @@
   let suppressed = null;
   let overlayTimer = null;
   let rafId = null;
+  let manualStart = null;
 
   chrome.storage.local.get(DEFAULTS, (stored) => {
     cfg = Object.assign({}, DEFAULTS, stored);
@@ -59,6 +61,8 @@
     document.removeEventListener("yt-navigate-finish", onNav, true);
     segments = [];
     suppressed = null;
+    manualStart = null;
+    removeTimelineMarkers();
     hideOverlay();
     if (rafId) cancelAnimationFrame(rafId);
     rafId = null;
@@ -70,9 +74,12 @@
     videoId = id || null;
     segments = [];
     suppressed = null;
+    manualStart = null;
     video = null;
+    removeTimelineMarkers();
     hideOverlay();
     if (!id) return;
+    loadManualSegments();
     RETRY_DELAYS.forEach((d) => setTimeout(rebuild, d));
   }
 
@@ -92,6 +99,10 @@
     }
 
     const t = video.currentTime;
+
+    if (video.duration && !document.getElementById(MARKER_CONTAINER_ID)) {
+      renderTimelineMarkers();
+    }
 
     if (suppressed !== null) {
       const s = segments.find((x) => x.start === suppressed);
@@ -196,13 +207,68 @@
     return out;
   }
 
+  // Vykreslení černobílých strukturovaných proužků na lištu přehrávače YouTube
+  function renderTimelineMarkers() {
+    removeTimelineMarkers();
+    if (!video || !isFinite(video.duration) || video.duration <= 0 || !segments.length) return;
+
+    const progressContainer = document.querySelector(".ytp-progress-bar");
+    if (!progressContainer) return;
+
+    const container = document.createElement("div");
+    container.id = MARKER_CONTAINER_ID;
+    container.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99;";
+
+    const duration = video.duration;
+
+    segments.forEach((seg) => {
+      const leftPercent = (seg.start / duration) * 100;
+      const widthPercent = ((seg.end - seg.start) / duration) * 100;
+
+      const marker = document.createElement("div");
+      // Změněno na čistou moderní černobílou / stříbrnou texturu
+      marker.style.cssText = `position:absolute;top:0;height:100%;left:${leftPercent}%;width:${widthPercent}%;background-color:rgba(255, 255, 255, 0.85);border: 1px solid rgba(0, 0, 0, 0.4);border-radius:1px;z-index:100;`;
+      marker.title = `${seg.title} (${Math.round(seg.end - seg.start)}s)`;
+
+      container.appendChild(marker);
+    });
+
+    progressContainer.appendChild(container);
+  }
+
+  function removeTimelineMarkers() {
+    const existing = document.getElementById(MARKER_CONTAINER_ID);
+    if (existing) existing.remove();
+  }
+
+  function loadManualSegments() {
+    if (!videoId) return;
+    chrome.storage.local.get({ manualSegments: {} }, (data) => {
+      const videoManuals = data.manualSegments[videoId] || [];
+      if (videoManuals.length > 0) {
+        videoManuals.forEach(m => {
+          segments.push({ start: m.start, end: m.end, title: "Manual Sponsor", src: "manual" });
+        });
+        segments = merge(segments);
+        renderTimelineMarkers();
+      }
+    });
+  }
+
   function rebuild() {
     if (!cfg.enabled || !videoId) return;
     const duration = video && isFinite(video.duration) ? video.duration : Infinity;
     let list = buildFromChapters(collectChapters(), duration);
 
     const apply = () => {
-      segments = merge(list).filter((s) => s.end > s.start && s.start < duration);
+      chrome.storage.local.get({ manualSegments: {} }, (data) => {
+        const videoManuals = data.manualSegments[videoId] || [];
+        videoManuals.forEach(m => {
+          list.push({ start: m.start, end: m.end, title: "Manual Sponsor", src: "manual" });
+        });
+        segments = merge(list).filter((s) => s.end > s.start && s.start < duration);
+        renderTimelineMarkers();
+      });
     };
 
     if (!cfg.useSponsorBlock) return apply();
@@ -223,6 +289,7 @@
     }
   }
 
+  // Monochromatický design plovoucího notifikačního boxu
   function ensureShadow() {
     let host = document.getElementById(HOST_ID);
     if (host) return host.shadowRoot;
@@ -235,34 +302,35 @@
       <style>
         :host { all: initial; }
         .box {
-          font: 12px/1.35 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-          color: #fff; background: rgba(12,12,12,.34);
-          -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-          border: 1px solid rgba(255,255,255,.14);
-          border-radius: 10px; padding: 7px 9px;
-          display: flex; align-items: center; gap: 9px;
+          font: 12px/1.35 'Inter', system-ui, sans-serif;
+          color: #fff; background: rgba(10,10,10,.85);
+          -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+          border: 1px solid #262626;
+          border-radius: 8px; padding: 8px 12px;
+          display: flex; align-items: center; gap: 10px;
           max-width: 290px; opacity: 0; pointer-events: auto;
-          transition: opacity .25s ease, transform .25s ease;
+          transition: opacity .2s ease, transform .2s ease;
           transform: translateY(6px);
-          box-shadow: 0 4px 16px rgba(0,0,0,.25);
+          box-shadow: 0 4px 20px rgba(0,0,0,.5);
         }
-        .box.on { opacity: .55; transform: translateY(0); }
-        .box:hover { opacity: .95; }
+        .box.on { opacity: .9; transform: translateY(0); }
+        .box:hover { opacity: 1; }
         .icon { font-size: 13px; opacity: .85; flex: 0 0 auto; }
         .txt { display: flex; flex-direction: column; min-width: 0; }
-        .txt b { font-weight: 600; font-size: 12px; }
+        .txt b { font-weight: 600; font-size: 12px; letter-spacing: -0.01em; }
         .sub {
-          font-size: 11px; opacity: .72; white-space: nowrap;
+          font-size: 11px; opacity: .7; white-space: nowrap;
           overflow: hidden; text-overflow: ellipsis; max-width: 190px;
+          font-family: monospace;
         }
         button {
-          all: unset; cursor: pointer; font: inherit; font-size: 11px;
-          padding: 3px 7px; border-radius: 6px;
-          background: rgba(255,255,255,.14); color: #fff; flex: 0 0 auto;
+          all: unset; cursor: pointer; font: inherit; font-size: 11px; font-weight: 500;
+          padding: 4px 8px; border-radius: 4px;
+          background: #ffffff; color: #000000; flex: 0 0 auto;
         }
-        button:hover { background: rgba(255,255,255,.28); }
-        .x { padding: 3px 6px; background: transparent; opacity: .6; }
-        .x:hover { background: rgba(255,255,255,.16); opacity: 1; }
+        button:hover { background: #e5e5e5; }
+        .x { padding: 4px 6px; background: transparent; color: #a3a3a3; opacity: .7; }
+        .x:hover { background: #262626; color: #ffffff; opacity: 1; }
       </style>
       <div class="box" id="box">
         <span class="icon">&#9197;</span>
@@ -315,10 +383,38 @@
         enabled: cfg.enabled,
         onWatchPage: !!videoId,
         segmentCount: segments.length,
-        chapters: collectChapters().length
+        chapters: collectChapters().length,
+        manualStart: manualStart
       });
     } else if (msg.type === "rescan") {
       rebuild();
+    } else if (msg.type === "manual-start") {
+      if (video) {
+        manualStart = video.currentTime;
+        respond({ success: true, time: manualStart });
+      } else {
+        respond({ success: false });
+      }
+    } else if (msg.type === "manual-stop") {
+      if (video && manualStart !== null) {
+        const manualEnd = video.currentTime;
+        if (manualEnd > manualStart) {
+          const newSeg = { start: manualStart, end: manualEnd };
+          chrome.storage.local.get({ manualSegments: {} }, (data) => {
+            const allManuals = data.manualSegments;
+            if (!allManuals[videoId]) allManuals[videoId] = [];
+            allManuals[videoId].push(newSeg);
+            chrome.storage.local.set({ manualSegments: allManuals }, () => {
+              manualStart = null;
+              rebuild();
+              respond({ success: true });
+            });
+          });
+          return true;
+        }
+      }
+      manualStart = null;
+      respond({ success: false });
     }
     return true;
   });

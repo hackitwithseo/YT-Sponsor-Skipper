@@ -1,65 +1,75 @@
 <!doctype html>
 <html>
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;width:300px}
-body{background:#101216;color:#e8ecf2;font:13px/1.45 system-ui,"Segoe UI",Roboto,sans-serif;padding:14px;overflow-x:hidden}
-header{margin-bottom:10px}
-.brand{display:flex;align-items:center;gap:9px}
-.mark{width:30px;height:30px;flex:0 0 auto;border-radius:9px;background-image:url(icon48.png);background-size:cover}
-h1{font-size:13.5px;font-weight:650;margin:0}
-.tag{margin:1px 0 0;font-size:10.5px;color:#6c7684}
-.brand>label{margin-left:auto}
-.status{font-size:11px;color:#8b95a4;background:#171a20;border:1px solid #22272f;border-radius:8px;padding:6px 9px;margin-bottom:10px;min-height:27px;display:flex;align-items:center}
-.status.ok{color:#7de0ab;border-color:#24483a}
-.status.warn{color:#e8c07a;border-color:#4a3c22}
-.card{background:#16191f;border:1px solid #232830;border-radius:10px;padding:2px 10px;margin-bottom:12px}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:#c8d0da;padding:8px 0;cursor:pointer;user-select:none}
-.divider{height:1px;background:#232830}
-.switch{position:relative;display:inline-flex;flex:0 0 auto}
-.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
-.track{width:36px;height:20px;border-radius:999px;background:#2a313b;border:1px solid #333c48;transition:background .16s,border-color .16s;position:relative}
-.track::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#8e99a8;transition:left .16s,background .16s}
-.switch input:checked+.track{background:#1d6a48;border-color:#2b8b60}
-.switch input:checked+.track::after{left:18px;background:#eafff4}
-.switch.big .track{width:42px;height:23px}
-.switch.big .track::after{width:17px;height:17px}
-.switch.big input:checked+.track::after{left:22px}
-.label{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;font-weight:600;color:#aeb7c4;text-transform:uppercase;letter-spacing:.55px;margin-bottom:4px}
-.count{font-weight:500;font-size:10.5px;color:#6c7684;letter-spacing:0;text-transform:none}
-.hint{font-size:10.5px;color:#6c7684;margin:0 0 6px}
-textarea{width:100%;height:150px;resize:vertical;padding:8px 9px;border-radius:9px;border:1px solid #262c35;background:#14171c;color:#dde4ee;font:11px/1.65 ui-monospace,Consolas,monospace;outline:none}
-textarea:focus{border-color:#2f6b4d}
-.btns{display:flex;gap:7px;margin-top:8px}
-button{flex:1;font:inherit;font-size:12px;font-weight:500;padding:7px 0;border-radius:8px;border:1px solid #2b323c;background:#212831;color:#d5dde8;cursor:pointer}
-button:hover{filter:brightness(1.2)}
-button.primary{background:#1d6a48;border-color:#2b8b60;color:#eafff4;flex:1.3}
-footer{margin-top:12px;font-size:10px;color:#5d6673;text-align:center}
-kbd{font:inherit;font-size:9.5px;padding:1px 4px;border-radius:4px;background:#1c2129;border:1px solid #2a303a;color:#97a1af}
-</style>
-<body style="background:#101216;color:#e8ecf2">
-<header>
-<div class="brand">
-<div class="mark"></div>
-<div>
-<h1>Sponsor Skipper</h1>
-<p class="tag">Chapter-based skipping</p>
-</div>
-<label class="switch big"><input type="checkbox" id="enabled"><span class="track"></span></label>
-</div>
-</header>
+<head>
+  <meta charset="utf-8">
+  <title>Sponsor Skipper</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 320px; background: #000000; color: #ffffff; font-family: 'Inter', system-ui, sans-serif; }
+    body { padding: 16px; position: relative; min-height: 480px; }
+    #popup-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    .content-wrapper { position: relative; z-index: 1; }
+    header { margin-bottom: 16px; border-bottom: 1px solid #262626; padding-bottom: 12px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .mark { width: 28px; height: 28px; border-radius: 6px; background-image: url(icon48.png); background-size: cover; border: 1px solid #404040; }
+    h1 { font-size: 13px; font-weight: 600; margin: 0; }
+    .tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #737373; text-transform: uppercase; margin-top: 2px; }
+    .brand > label { margin-left: auto; }
+    .status { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #a3a3a3; background: rgba(10, 10, 10, 0.75); border: 1px solid #262626; border-radius: 6px; padding: 8px 10px; margin-bottom: 14px; min-height: 30px; display: flex; align-items: center; }
+    .status.ok { color: #ffffff; border-color: #525252; }
+    .status.warn { color: #d4d4d4; border-color: #404040; }
+    .card { background: rgba(10, 10, 10, 0.75); border: 1px solid #262626; border-radius: 8px; padding: 4px 12px; margin-bottom: 14px; }
+    .row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #d4d4d4; padding: 8px 0; cursor: pointer; }
+    .divider { height: 1px; background: #262626; }
+    .switch { position: relative; display: inline-flex; }
+    .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .track { width: 36px; height: 20px; border-radius: 999px; background: #171717; border: 1px solid #333333; position: relative; transition: background .15s; }
+    .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #737373; transition: left .15s; }
+    .switch input:checked + .track { background: #ffffff; }
+    .switch input:checked + .track::after { left: 18px; background: #000000; }
+    .switch.big .track { width: 42px; height: 23px; }
+    .switch.big .track::after { width: 17px; height: 17px; }
+    .switch.big input:checked + .track::after { left: 22px; }
+    .label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #a3a3a3; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; margin-bottom: 6px; }
+    .count { font-weight: 400; font-size: 10px; color: #737373; text-transform: none; }
+    .hint { font-size: 10.5px; color: #737373; margin-bottom: 6px; }
+    textarea { width: 100%; height: 90px; resize: vertical; padding: 8px 10px; border-radius: 6px; border: 1px solid #262626; background: rgba(5, 5, 5, 0.85); color: #e5e5e5; font: 11px/1.5 'JetBrains Mono', monospace; outline: none; }
+    textarea:focus { border-color: #525252; }
+    .btns { display: flex; gap: 6px; margin-top: 8px; }
+    button { flex: 1; font: inherit; font-size: 11.5px; font-weight: 500; padding: 7px 0; border-radius: 6px; border: 1px solid #333333; background: rgba(20, 20, 20, 0.85); color: #e5e5e5; cursor: pointer; }
+    button:hover { background: #262626; border-color: #525252; color: #ffffff; }
+    button.primary { background: #ffffff; border-color: #ffffff; color: #000000; font-weight: 600; flex: 1.3; }
+    button.manual { width: 100%; margin-top: 8px; background: rgba(20, 20, 20, 0.85); border: 1px solid #333333; color: #ffffff; font-weight: 600; padding: 9px 10px; font-size: 11px; }
+    button.manual.recording { background: #ffffff; color: #000000; }
+    footer { margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: #525252; text-align: center; }
+    kbd { font: inherit; font-size: 9px; padding: 1px 4px; border-radius: 3px; background: #141414; border: 1px solid #262626; color: #a3a3a3; }
+  </style>
+</head>
+<body>
+  <canvas id="popup-canvas"></canvas>
+  <div class="content-wrapper">
+    <header>
+      <div class="brand">
+        <div class="mark"></div>
+        <div>
+          <h1>Sponsor Skipper</h1>
+          <p class="tag">System Control v1.1.1</p>
+        </div>
+        <label class="switch big"><input type="checkbox" id="enabled"><span class="track"></span></label>
+      </div>
+    </header>
 
-<div class="status" id="status">Loading...</div>
+    <div class="status" id="status">Loading system status...</div>
 
-<div class="card">
-<label class="row"><span>Skip overlay</span><span class="switch"><input type="checkbox" id="showOverlay"><span class="track"></span></span></label>
-<div class="divider"></div>
-<label class="row"><span>SponsorBlock fallback</span><span class="switch"><input type="checkbox" id="useSponsorBlock"><span class="track"></span></span></label>
-</div>
+    <div class="card">
+      <label class="row"><span>Skip overlay</span><span class="switch"><input type="checkbox" id="showOverlay"><span class="track"></span></span></label>
+      <div class="divider"></div>
+      <label class="row"><span>SponsorBlock fallback</span><span class="switch"><input type="checkbox" id="useSponsorBlock"><span class="track"></span></span></label>
+    </div>
 
-<div class="label"><span>Keywords</span><span class="count" id="count">0 words</span></div>
-<p class="hint">Matched against chapter titles. One per line. Saves as you type.</p>
-<textarea id="keywords" spellcheck="false" wrap="off">sponsor
+    <div class="label"><span>Keywords</span><span class="count" id="count">0 words</span></div>
+    <p class="hint">Matched against chapter titles. One per line.</p>
+    <textarea id="keywords" spellcheck="false" wrap="off">sponsor
 sponsored
 sponsorship
 sponzor
@@ -122,14 +132,16 @@ plug
 plug time
 giveaway</textarea>
 
-<div class="btns">
-<button class="primary" id="save">Save</button>
-<button id="rescan">Rescan</button>
-<button id="reset">Reset</button>
-</div>
+    <div class="btns">
+      <button class="primary" id="save">Save</button>
+      <button id="rescan">Rescan</button>
+      <button id="reset">Reset</button>
+    </div>
 
-<footer><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> toggle | <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>U</kbd> undo</footer>
+    <button class="manual" id="manualBtn">Start/Stop Manual Blocking Of Sponsors</button>
 
-<script src="popup.js"></script>
+    <footer><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> toggle | <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>U</kbd> undo</footer>
+  </div>
+  <script src="popup.js"></script>
 </body>
 </html>
