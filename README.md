@@ -5,10 +5,10 @@
 <h1 align="center">Sponsor Skipper</h1>
 
 <p align="center">
-  <img alt="manifest v3" src="https://img.shields.io/badge/manifest-v3-1d6a48">
-  <img alt="platform" src="https://img.shields.io/badge/browser-Brave%20%7C%20Chrome%20%7C%20Edge-1d6a48">
-  <img alt="telemetry" src="https://img.shields.io/badge/telemetry-none-1d6a48">
-  <img alt="license" src="https://img.shields.io/badge/license-MIT-1d6a48">
+  <img alt="manifest v3" src="[https://img.shields.io/badge/manifest-v3-000000](https://img.shields.io/badge/manifest-v3-000000)">
+  <img alt="platform" src="[https://img.shields.io/badge/browser-Brave%20%7C%20Chrome%20%7C%20Edge-000000](https://img.shields.io/badge/browser-Brave%20%7C%20Chrome%20%7C%20Edge-000000)">
+  <img alt="telemetry" src="[https://img.shields.io/badge/telemetry-none-000000](https://img.shields.io/badge/telemetry-none-000000)">
+  <img alt="license" src="[https://img.shields.io/badge/license-MIT-000000](https://img.shields.io/badge/license-MIT-000000)">
 </p>
 
 <p align="center">Skips sponsor segments in YouTube videos using the chapter markers the uploader already published.<br>Leaves YouTube's own ad breaks completely alone.</p>
